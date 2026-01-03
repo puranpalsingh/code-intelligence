@@ -1,6 +1,7 @@
 import ast
 from collections import defaultdict
 
+
 class CallGraphVisitor(ast.NodeVisitor):
     def __init__(self):
         # caller -> set(callees)
@@ -29,28 +30,26 @@ class CallGraphVisitor(ast.NodeVisitor):
         self.current_scope = prev_scope
 
     def visit_Call(self, node):
-    if self.current_scope is None:
-        return
+        if self.current_scope is None:
+            return
 
-    callee = self._get_call_name(node.func)
-    if callee:
-        resolved = self.imports.get(callee, callee)
-        self.call_graph[self.current_scope].add(resolved)
+        callee = self._get_call_name(node.func)
+        if callee:
+            resolved = self.imports.get(callee, callee)
+            self.call_graph[self.current_scope].add(resolved)
 
-    self.generic_visit(node)
+        self.generic_visit(node)
 
-        
     def visit_Import(self, node):
-    for alias in node.names:
-        name = alias.asname or alias.name
-        self.imports[name] = alias.name
+        for alias in node.names:
+            name = alias.asname or alias.name
+            self.imports[name] = alias.name
 
-   def visit_ImportFrom(self, node):
-    module = node.module
-    for alias in node.names:
-        local = alias.asname or alias.name
-        self.imports[local] = f"{module}.{alias.name}"
-
+    def visit_ImportFrom(self, node):
+        module = node.module
+        for alias in node.names:
+            local = alias.asname or alias.name
+            self.imports[local] = f"{module}.{alias.name}"
 
     def _get_call_name(self, node):
         """
@@ -63,7 +62,6 @@ class CallGraphVisitor(ast.NodeVisitor):
             return node.id
 
         elif isinstance(node, ast.Attribute):
-            # obj.method -> method
             return node.attr
 
         elif isinstance(node, ast.Call):
